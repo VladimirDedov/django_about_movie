@@ -16,7 +16,7 @@ class Category(models.Model):
     class Meta:
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
-
+        ordering = ['id', ]  # сортировка в админ панеле
 
 class Actor(models.Model):
     """Актерыи режиссеры"""
@@ -57,12 +57,12 @@ class Movie(models.Model):
     country = models.CharField(max_length=100, verbose_name='Страна')
     directors = models.ManyToManyField(Actor, related_name='film_derector', verbose_name='Режиссеры')
     actors = models.ManyToManyField(Actor, related_name='film_actor', verbose_name='Актеры')
-    genre = models.ManyToManyField(Genre, verbose_name='Жанры')
+    genre = models.ManyToManyField(Genre, verbose_name='Жанр')
     world_premiere = models.DateField(default=date.today, verbose_name='Премьера в мире')
     budget = models.PositiveIntegerField(default=0, verbose_name='Бюджет', help_text="Сумма в долларах")
     fees_in_usa = models.PositiveIntegerField(default=0, verbose_name='Сборы в сша')
     fees_in_world = models.PositiveIntegerField(default=0, verbose_name='Сборы в мире')
-    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, verbose_name='Категория')
     url = models.SlugField(max_length=130, unique=True, db_index=True, verbose_name='URL')
     draft = models.BooleanField(default=False, verbose_name='Черновик')
 
@@ -79,6 +79,7 @@ class Movie(models.Model):
     class Meta:
         verbose_name = "Фильм"
         verbose_name_plural = "Фильмы"
+        ordering=['id',]#сортировка в админ панеле
 
 
 class Movie_Shots(models.Model):

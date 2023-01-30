@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 {% extends 'movies/base.html' %}
 {%block header%}bg1{%endblock header%}
+{% block title %}Всё о кино {% endblock %}
 {% block movie %}
 <div class="left-ads-display col-lg-9">
     <div class="row">
@@ -12,7 +13,7 @@
                 </div>
                 <div class="item-info-product">
                     <h4 class="">
-                        <a href="{{movie.get_absolute_url}}" class="editContent">{{movie.title}}</a>
+                        <a href="{{movie.get_absolute_url}}" class="editContent">{{movie.title}} </a>
                     </h4>
 
                     <div class="product_price">

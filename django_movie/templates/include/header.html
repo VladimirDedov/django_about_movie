@@ -20,7 +20,10 @@
                     <a href="#">Категории <span class="fa fa-angle-down" aria-hidden="true"></span></a>
                     <input type="checkbox" id="drop-2">
                     <ul>
-                        <li><a href="moviesingle.html">Фильмы</a></li>
+                        {% for cat in movie.category_set.all %}
+                        <li><a href="moviesingle.html">cat.name</a></li>
+                        {% endfor %}
+                        <li><a href="moviesingle.html">Фильмы1</a></li>
                         <li><a href="moviesingle.html">Сериалы</a></li>
                         <li><a href="moviesingle.html">Мультфильмы</a></li>
                     </ul>

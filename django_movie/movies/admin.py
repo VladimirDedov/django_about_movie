@@ -5,12 +5,16 @@ from .models import *
 from django.utils.html import mark_safe
 from ckeditor_uploader.widgets import CKEditorUploadingWidget
 
-#Настройка для редактора CKEditor
-class MovieAdminForm(forms.ModelForm):#Подключить форму к классу MovieAdmin
-    description = forms.CharField(label='Описание фильма', widget=CKEditorUploadingWidget())#Поле отвечающее за описание фильма добавляем виджет
+
+# Настройка для редактора CKEditor
+class MovieAdminForm(forms.ModelForm):  # Подключить форму к классу MovieAdmin
+    description = forms.CharField(label='Описание фильма',
+                                  widget=CKEditorUploadingWidget())  # Поле отвечающее за описание фильма добавляем виджет
+
     class Meta:
         model = Movie
         fields = '__all__'
+
 
 @admin.register(
     Category)  # Регистрация класса с помощью декоратора аналогично - admin.site.register(Category, CategoryAdmin)
@@ -31,7 +35,6 @@ class ReviewInLine(admin.TabularInline):  # Класс для отображен
 
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
-
     list_display = (
         'id', 'title', 'category', 'poster', 'year', 'country', 'world_premiere', 'budget', 'url', 'draft')
     list_display_links = ('title', 'year', 'country', 'world_premiere', 'category', 'url')
@@ -41,8 +44,9 @@ class MovieAdmin(admin.ModelAdmin):
     # inlines = [ReviewInLine]  # Передается класс
     save_on_top = True  # Перенос меню сохранения(кнопок) на верх
     save_as = True  # Появляется кнопка "Сохранить как новый объект" при изменении нескольких полей
-    readonly_fields = ('get_image',)#Добавление картинки постера
-    form=MovieAdminForm#Подключение формы описанной выше для CKEditor
+    readonly_fields = ('get_image',)  # Добавление картинки постера
+    form = MovieAdminForm  # Подключение формы описанной выше для CKEditor
+    actions = ['unpublished', 'published']#Передаем actions
     fieldsets = (  # Группировка по полям
         (None, {'fields': (('title', 'tagline'),)}),  # В одну строчку выводятся данные
         ('Постер', {'fields': (('poster', 'get_image'),)}),
@@ -56,11 +60,33 @@ class MovieAdmin(admin.ModelAdmin):
         ('Описание фильма', {'fields': ('description',)})
     )
 
-
     def get_image(self, obj):  # obj - объект класса Actor
         return mark_safe(f'<img src={obj.poster.url} width="50" height="60"')
 
+    # write actions for admin django
+    def unpublished(self, request, queryset):
+        """Снять с публикации"""
+        drow_update = queryset.update(draft=True)
+        if drow_update == 1:
+            message_bit = "1 запись обновлена"
+        else:
+            message_bit = f"{drow_update} записей обновлено"
+        self.message_user(request, f"{message_bit}")#Функция вывода сообщения в адм панеле
+
+    def published(self, request, queryset):
+        """Опубликовать"""
+        drow_update = queryset.update(draft=False)
+        if drow_update == 1:
+            message_bit = "1 запись опубликована"
+        else:
+            message_bit = f"{drow_update} записей опубликовано"
+        self.message_user(request, f"{message_bit}")
+
     get_image.short_description = 'Изображение'
+    unpublished.short_description = "Снять с публикации"#Отображение имени в  actions
+    unpublished.allow_permissions = ('change',)#С какими правами можно менять публикации. Права на изменение записей change
+    published.short_description = "Опубликовать"#Отображение имени в  actions
+    published.allow_permissions = ('change',)#С какими правами можно менять публикации Права на изменение записей change
 
 
 @admin.register(Reviews)
@@ -94,9 +120,8 @@ class Movie_ShotsAdmin(admin.ModelAdmin):
 
 # admin.site.register(Category, CategoryAdmin)
 admin.site.register(Genre)
-# admin.site.register(Movie)
 admin.site.register(Rating)
 admin.site.register(RatingStar)
 
-admin.site.site_title = "Django-movies"# Изменение названия самой админ панели
-admin.site.site_header = "Django-movies"# Изменение названия самой админ панели
+admin.site.site_title = "Django-movies"  # Изменение названия самой админ панели
+admin.site.site_header = "Django-movies"  # Изменение названия самой админ панели

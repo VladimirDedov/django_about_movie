@@ -10,6 +10,9 @@ class MoviesView(ListView):
     model = Movie
     queryset = Movie.objects.filter(draft=False)
     template_name = 'movies/movies.html'
+
+
+
     # def get(self, request):#request вся информация присланная от браузера
     #     movies = Movie.objects.all()
     #     return render(request, 'movies/movies.html', context={'movie_list': movies})

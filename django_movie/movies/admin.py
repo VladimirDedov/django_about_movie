@@ -14,7 +14,12 @@ class MovieAdminForm(forms.ModelForm):  # Подключить форму к к�
     class Meta:
         model = Movie
         fields = '__all__'
+class ActorAdminForm(forms.ModelForm):
+    description = forms.CharField(label='Описание актера/режисера', widget=CKEditorUploadingWidget)
 
+    class Meta:
+        model = Actor
+        fields = '__all__'
 
 @admin.register(
     Category)  # Регистрация класса с помощью декоратора аналогично - admin.site.register(Category, CategoryAdmin)
@@ -99,6 +104,7 @@ class ReviewsAdmin(admin.ModelAdmin):
 class ActorAdmin(admin.ModelAdmin):
     list_display = ('name', 'age', 'get_image')
     readonly_fields = ('get_image',)  # вывод изображения в самой записи
+    form=ActorAdminForm#Добавление CKEditor в админку
 
     # Метод дл вывода изображения в админке
     def get_image(self, obj):  # obj - объект класса Actor

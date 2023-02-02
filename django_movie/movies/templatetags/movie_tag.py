@@ -3,7 +3,7 @@ from movies.models import Category, Movie
 register = template.Library()#Экземпляр класса Library
 
 @register.simple_tag#Декоратор регистрирует функцию как тег
-def get_categories():
+def get_categories():#Возвращает в словарь last_movie во view
     """Вывод все катерий"""
     return Category.objects.all()
 

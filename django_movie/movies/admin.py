@@ -123,10 +123,13 @@ class Movie_ShotsAdmin(admin.ModelAdmin):
 
     get_image.short_description = 'Изображение'
 
+class RatingAdmin(admin.ModelAdmin):
+    list_display = ('movie','star','ip')
+
 
 # admin.site.register(Category, CategoryAdmin)
 admin.site.register(Genre)
-admin.site.register(Rating)
+admin.site.register(Rating, RatingAdmin)
 admin.site.register(RatingStar)
 
 admin.site.site_title = "Django-movies"  # Изменение названия самой админ панели

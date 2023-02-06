@@ -1,8 +1,9 @@
 from django.views.generic import ListView, DetailView, View
 from django.shortcuts import render, redirect
+from django.http import HttpResponse
 from django.db.models import Q
 from .models import *
-from .forms import ReviewForm
+from .forms import ReviewForm, RatingForm
 
 
 class GenreYear:
@@ -12,8 +13,12 @@ class GenreYear:
         return Genre.objects.all()
 
     def get_years(self):
+        new_lst_year_distinct=[]
         list_year = Movie.objects.filter(draft=False).values("year").distinct()
-        return list_year  # Выбираем из модели Movie только поле с годом
+        for dct in list_year:
+            if dct not in new_lst_year_distinct:
+                new_lst_year_distinct.append(dct)
+        return new_lst_year_distinct  # Выбираем из модели Movie только поле с годом
 
 
 class MoviesView(GenreYear, ListView):
@@ -32,9 +37,15 @@ class MovieDetailView(GenreYear, DetailView):
     model = Movie
     slug_field = 'url'  # По какому полю искать запись
     template_name = 'movies/moviesingle.html'
+
     # def get(self, request, slug):
     #     movie = Movie.objects.get(url=slug)
     #     return render(request, 'movies/moviesingle.html',{'movie':movie})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["star_form"] = RatingForm()
+        return context
 
 
 class AddReview(GenreYear, View):
@@ -80,3 +91,29 @@ class FilterMoviesView(GenreYear, ListView):
             queryset = Movie.objects.filter(genre__in=self.request.GET.getlist("genre"))
 
         return queryset
+
+
+class AddStarRating(View):
+    """Добавление рейтинга фильма"""
+
+    def get_clients_ip(self, request):
+        """получение ip клиента"""
+        x_forward_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forward_for:
+            ip = x_forward_for.split(',')[0]
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+        return ip
+
+    def post(self, request):
+        """Установка рейтинга фильма"""
+        form = RatingForm(request.POST)#Генерация формы на основе request
+        if form.is_valid():
+            Rating.objects.update_or_create(#Создать или обновить поля в модели
+                ip=self.get_clients_ip(request),#Получить ip клиента
+                movie_id=int(request.POST.get('movie')),#Передается поле movie from POST запроса. Приходят из скрытого поля input movie
+                defaults={"star_id": int(request.POST.get("star"))}#Словарь, поле которое хотим изменить, если запись найдена и создать если нет.
+            )
+            return HttpResponse(status=201)
+        else:
+            return HttpResponse(status=400)

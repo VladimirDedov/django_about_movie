@@ -13,7 +13,7 @@ class GenreYear:
         return Genre.objects.all()
 
     def get_years(self):
-        new_lst_year_distinct=[]
+        new_lst_year_distinct = []
         list_year = Movie.objects.filter(draft=False).values("year").distinct()
         for dct in list_year:
             if dct not in new_lst_year_distinct:
@@ -30,6 +30,22 @@ class MoviesView(GenreYear, ListView):
     # def get(self, request):#request вся информация присланная от браузера
     #     movies = Movie.objects.all()
     #     return render(request, 'movies/movies.html', context={'movie_list': movies})
+
+
+class Search(GenreYear, ListView):
+    """Поиск фильмов"""
+    template_name = 'movies/movies.html'
+
+    def get_queryset(self): # q - имя поля input из sidebar.html
+        paginate_by = 3
+        queryset = Movie.objects.filter(title__iregex=self.request.GET.get("q"))  # __icontains - искать без учета регистра
+        return queryset
+
+    def get_context_data(self, *args, **kwargs):
+        context = super().get_context_data(*args, **kwargs)
+        context["q"] = self.request.GET.get("q")
+        print(context['q'])
+        return context
 
 
 class MovieDetailView(GenreYear, DetailView):
@@ -107,12 +123,14 @@ class AddStarRating(View):
 
     def post(self, request):
         """Установка рейтинга фильма"""
-        form = RatingForm(request.POST)#Генерация формы на основе request
+        form = RatingForm(request.POST)  # Генерация формы на основе request
         if form.is_valid():
-            Rating.objects.update_or_create(#Создать или обновить поля в модели
-                ip=self.get_clients_ip(request),#Получить ip клиента
-                movie_id=int(request.POST.get('movie')),#Передается поле movie from POST запроса. Приходят из скрытого поля input movie
-                defaults={"star_id": int(request.POST.get("star"))}#Словарь, поле которое хотим изменить, если запись найдена и создать если нет.
+            Rating.objects.update_or_create(  # Создать или обновить поля в модели
+                ip=self.get_clients_ip(request),  # Получить ip клиента
+                movie_id=int(request.POST.get('movie')),
+                # Передается поле movie from POST запроса. Приходят из скрытого поля input movie
+                defaults={"star_id": int(request.POST.get("star"))}
+                # Словарь, поле которое хотим изменить, если запись найдена и создать если нет.
             )
             return HttpResponse(status=201)
         else:
